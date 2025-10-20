@@ -1,3 +1,4 @@
+--only-binary=:all:
 aiogram==2.25.1
 aiohttp==3.8.1
 cryptography==3.4.8
