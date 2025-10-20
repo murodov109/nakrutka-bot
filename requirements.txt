@@ -1,5 +1,5 @@
 aiogram==2.25.1
-aiohttp
+aiohttp==3.9.5
 cryptography==3.4.8
 cffi==1.15.1
 wheel
