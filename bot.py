@@ -152,5 +152,3 @@ def lucky_user(msg):
             bot.send_message(msg.chat.id, "Tanlangan foydalanuvchini topib bo‘lmadi.")
     else:
         bot.send_message(msg.chat.id, "Foydalanuvchilar ro‘yxati bo‘sh.")
-
-bot.polling(none_stop=True)
