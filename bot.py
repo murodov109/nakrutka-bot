@@ -1,6 +1,8 @@
 import telebot
 from telebot import types
 from random import choice
+from flask import Flask
+import threading
 
 TOKEN = "8382109071:AAGsX1zJY7cqvVFekJTXDbYHP8nfRT8tYvk"
 ADMIN_ID = 7617397626
@@ -8,13 +10,26 @@ REQUIRED_CHANNELS = ["@jonli_obunachipro", "@kerakli_xizmatlarn1"]
 MAIN_CHANNEL = "@jonli_obunachipro"
 
 bot = telebot.TeleBot(TOKEN)
-CARD_NUMBER = "8600 XXXX XXXX XXXX"
+CARD_NUMBER = "UZCARD 5440 8103 0560 8647"
 user_balances = {}
 daily_tasks = {}
 orders = {}
 completed_tasks = {}
 referrals = {}
 order_progress = {}
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "✅ Bot Render’da ishlayapti!"
+
+def run():
+    app.run(host="0.0.0.0", port=8080)
+
+def keep_alive():
+    t = threading.Thread(target=run)
+    t.start()
 
 def check_subscription(user_id):
     for channel in REQUIRED_CHANNELS:
@@ -32,7 +47,7 @@ def start(message):
         markup = types.InlineKeyboardMarkup()
         for ch in REQUIRED_CHANNELS:
             markup.add(types.InlineKeyboardButton(f"Obuna bo‘lish: {ch}", url=f"https://t.me/{ch[1:]}"))
-        markup.add(types.InlineKeyboardButton("Tekshirish ✅", callback_data="check_subs"))
+        markup.add(types.InlineKeyboardButton("✅ Tekshirish", callback_data="check_subs"))
         bot.send_message(message.chat.id, "Botdan foydalanish uchun quyidagi kanallarga obuna bo‘ling:", reply_markup=markup)
         return
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -41,7 +56,7 @@ def start(message):
     markup.row("👥 Pul ishlash")
     if message.from_user.id == ADMIN_ID:
         markup.row("⚙️ Admin panel")
-    bot.send_message(message.chat.id, "Xush kelibsiz! Quyidagi tugmalar orqali harakat qiling 👇", reply_markup=markup)
+    bot.send_message(message.chat.id, "👋 Xush kelibsiz!\nQuyidagi tugmalar orqali harakat qiling 👇", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data == "check_subs")
 def check_subs(call):
@@ -54,7 +69,7 @@ def check_subs(call):
 @bot.message_handler(func=lambda msg: msg.text == "💰 Hisobim")
 def balance(msg):
     bal = user_balances.get(msg.from_user.id, 0)
-    bot.send_message(msg.chat.id, f"Sizning hisobingiz: {bal} so‘m")
+    bot.send_message(msg.chat.id, f"Sizning hisobingiz: {bal} so‘m 💸")
 
 @bot.message_handler(func=lambda msg: msg.text == "🛒 Buyurtma berish")
 def order_start(msg):
@@ -67,7 +82,7 @@ def order_amount(msg):
         cost = count * 100
         uid = msg.from_user.id
         if user_balances.get(uid, 0) < cost:
-            bot.send_message(msg.chat.id, f"Balansingizda yetarli mablag‘ yo‘q.\nKerakli summa: {cost} so‘m")
+            bot.send_message(msg.chat.id, f"Balansingizda mablag‘ yetarli emas.\nKerakli summa: {cost} so‘m")
             return
         orders[uid] = {"count": count, "cost": cost}
         bot.send_message(msg.chat.id, "Kanal yoki guruh havolasini yuboring:")
@@ -89,7 +104,7 @@ def order_link(msg):
     markup.add(types.InlineKeyboardButton(f"💸 Pul ishlash (0/{count})", callback_data=f"task_{uid}"))
     post_text = f"🆕 Yangi buyurtma!\nObuna bo‘ling va 100 so‘m oling!\n{link}"
     bot.send_message(MAIN_CHANNEL, post_text, reply_markup=markup)
-    bot.send_message(msg.chat.id, f"Buyurtma qabul qilindi! {cost} so‘m hisobingizdan yechildi.")
+    bot.send_message(msg.chat.id, f"✅ Buyurtma qabul qilindi! {cost} so‘m hisobingizdan yechildi.")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("task_"))
 def task_do(call):
@@ -113,7 +128,7 @@ def task_do(call):
         total = order_progress[order_owner]["total"]
         if done >= total:
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
-            bot.send_message(call.message.chat.id, "✅ Buyurtma muvaffaqiyatli bajarildi!")
+            bot.send_message(call.message.chat.id, "🎉 Buyurtma muvaffaqiyatli bajarildi!")
         else:
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton(f"💸 Pul ishlash ({done}/{total})", callback_data=f"task_{order_owner}"))
@@ -123,7 +138,7 @@ def task_do(call):
 
 @bot.message_handler(func=lambda msg: msg.text == "💳 Hisobni to‘ldirish")
 def pay(msg):
-    bot.send_message(msg.chat.id, f"To‘lov uchun karta: {CARD_NUMBER}\nTo‘lov qilganingizdan so‘ng 'Tolov qildim' deb yozing.")
+    bot.send_message(msg.chat.id, f"To‘lov uchun karta: {CARD_NUMBER}\nTo‘lovdan so‘ng 'Tolov qildim' deb yozing.")
 
 @bot.message_handler(func=lambda msg: msg.text.lower() == "tolov qildim")
 def pay_check(msg):
@@ -141,12 +156,13 @@ def admin(msg):
     markup.row("💳 Karta raqamni o‘zgartirish", "🎁 Foydalanuvchi hisobiga pul qo‘shish")
     markup.row("🍀 Omadli foydalanuvchi", "📢 Reklama tarqatish")
     markup.row("🔗 Majburiy kanallarni o‘zgartirish")
-    bot.send_message(msg.chat.id, "Admin panel:", reply_markup=markup)
+    bot.send_message(msg.chat.id, "⚙️ Admin panel:", reply_markup=markup)
 
 @bot.message_handler(func=lambda msg: msg.from_user.id == ADMIN_ID and msg.text == "📊 Bot statistikasi")
 def stats(msg):
     total_users = len(user_balances)
     active = sum(1 for u in user_balances if user_balances[u] > 0)
-    bot.send_message(msg.chat.id, f"Umumiy foydalanuvchilar: {total_users}\nFaol foydalanuvchilar: {active}")
+    bot.send_message(msg.chat.id, f"👥 Umumiy foydalanuvchilar: {total_users}\n💎 Faol foydalanuvchilar: {active}")
 
+keep_alive()
 bot.polling(none_stop=True)
