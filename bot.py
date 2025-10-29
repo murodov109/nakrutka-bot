@@ -433,4 +433,4 @@ def home():
     return "Bot ishlayapti"
 def run():
     app.run(host="0.0.0.0", port=8080)
-
+bot.infinity_polling()
